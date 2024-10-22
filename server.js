@@ -1,8 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const userRoutes = require('./router/user');
+const DateRoutes = require('./router/date');
 const passRoutes = require('./router/pass');
+const AdminPassRoutes = require('./router/AdminPass')
 const cors = require('cors')
 dotenv.config();
 
@@ -20,7 +21,8 @@ mongoose.connect(process.env.MONGODB_URI, {
 // Use auth routes
 // app.use('/api/user', userRoutes);
 app.use('/api', passRoutes)
-
+app.use("/api", DateRoutes)
+app.use("/api/admin", AdminPassRoutes)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

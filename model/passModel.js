@@ -8,7 +8,7 @@ const passSchema = new mongoose.Schema({
   price: {
     type: Number,
     required: true,
-  },
+  },  
   quantity: {
     type: Number,
     required: true,
@@ -16,7 +16,7 @@ const passSchema = new mongoose.Schema({
   selectedDates: [
     {
       date: {
-        type: Date,
+        type: String,
         required: true,
       },
       status: {
@@ -33,6 +33,12 @@ const passSchema = new mongoose.Schema({
   UserLink: {
     type: String,
   },
+  firstName :{
+    type :String, 
+  },
+  lastName :{
+    type :String, 
+  }
 });
 
 const Pass = mongoose.model("Pass", passSchema);

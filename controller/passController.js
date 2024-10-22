@@ -47,8 +47,7 @@ const Passes = async (req, res) => {
   }
 };
 
-// Update Pass Status (accept/reject specific date)
-const updatePassStatus = async (req, res) => {
+  const updatePassStatus = async (req, res) => {
   const { _id, date, action } = req.body; // Expect pass _id, specific date (DD/MM/YYYY), and action (accept/reject)
 
   if (!action || !_id || !date) {
@@ -114,8 +113,8 @@ const updatePassDetails = async (req, res) => {
     // Find the pass by ID and update the fields
     const updatedPass = await Pass.findByIdAndUpdate(
       _id,
-      { type, quantity }, // Update type, quantity, and selectedDates
-      { new: true } // Return the updated document
+      { type, quantity }, 
+      { new: true } 
     );
 
     if (!updatedPass) {
@@ -138,12 +137,27 @@ const sendMail = async (req, res) => {
 
   try {
     const dummyLink = `http://192.168.29.219:3000/pass/${_id}`;
-
+    const updatedPasses = passes.map(pass => ({
+      ...pass,
+      firstName: firstName,
+      lastName: lastName
+    }));
+    
+    for (const pass of updatedPasses) {
+      const updatedPass = await Pass.findOneAndUpdate(
+        { _id: pass._id },  // Match by the existing pass _id
+        { $set: pass },    // Update the pass with the new data
+        // { new: true, upsert: true }  // Create a new document if not found
+      );
+      if (!updatedPass) {
+        console.error(`Error updating pass with _id ${pass._id}`);
+      }
+    }
     // Send email with passes and dummy link
     await sendEmail(email, passes, dummyLink , lastName, firstName);
 
     // Respond with success and dummy link
-    res.status(201).json({ success: true, link: dummyLink });
+    res.status(200).json({ message: "Passes saved and email sent", passes: updatedPasses });
   } catch (error) {
     console.error("Error saving user or sending email:", error);
     res.status(400).json({ error: error.message, success: false });
