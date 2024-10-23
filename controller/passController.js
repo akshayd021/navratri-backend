@@ -16,10 +16,9 @@ const Passes = async (req, res) => {
 
   if (
     !Array.isArray(selectedDates) ||
-    selectedDates.length === 0 ||
-    selectedDates.length > 3
+    selectedDates.length === 0 
   ) {
-    return res.status(400).json({ error: "You must select 1 to 3 dates." });
+    return res.status(400).json({ error: "You must select 1  date." });
   }
 
   // Parse dates and map them into objects with the `date` field
@@ -136,7 +135,7 @@ const sendMail = async (req, res) => {
   const { passes , email , _id , firstName, lastName} = req.body;
 
   try {
-    const dummyLink = `http://192.168.29.219:3000/pass/${_id}`;
+    const dummyLink = `http://localhost:3000/pass/${_id}`;
     const updatedPasses = passes.map(pass => ({
       ...pass,
       firstName: firstName,
