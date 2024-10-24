@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const QRCode = require("qrcode");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -7,6 +8,7 @@ const transporter = nodemailer.createTransport({
     pass: "jdgh zzfj uvfq zljc",
   },
 });
+
 const sendEmail = async (email, passes, dummyLink, firstName, lastName) => {
   try {
     if (!Array.isArray(passes)) {
@@ -22,73 +24,91 @@ const sendEmail = async (email, passes, dummyLink, firstName, lastName) => {
       return `${day}-${month}-${year}`;
     };
 
-    // Generate pass details and date-wise accept/reject buttons with individual pass IDs
-    const passDetails = passes
-      .map((pass) => {
-        if (!Array.isArray(pass.selectedDates)) {
-          console.error("Error: selectedDates is not an array for pass:", pass);
-          throw new Error("Invalid selectedDates format in pass");
-        }
+    const passDetailsPromises = passes.map(async (pass) => {
+      if (!Array.isArray(pass.selectedDates)) {
+        console.error("Error: selectedDates is not an array for pass:", pass);
+        throw new Error("Invalid selectedDates format in pass");
+      }
 
-        const formattedDates = pass.selectedDates
-          .map((date) => {
-            const formattedDate = formatDate(date?.date);
+      const attachments = [];
 
-            // Generate individual dummy links for accept/reject buttons using the pass ID
-            const acceptLink = `${dummyLink}?action=accept&passId=${pass._id}`;
-            const rejectLink = `${dummyLink}?action=reject&passId=${pass._id}`;
+      const formattedDates = await Promise.all(
+        pass.selectedDates.map(async (date, index) => {
+          const formattedDate = formatDate(date?.date);
 
-            return `
-              <div style="margin-bottom: 10px;">
-                <p>Date: ${formattedDate}</p>
-                <a href="${acceptLink}" 
-                   style="color:green; padding: 10px 20px; background-color: white; border-radius: 5px; border: 1px solid green; text-decoration: none; font-weight: bold; display: inline-block; margin-right: 10px;">
-                  Accept
-                </a>
-                <a href="${rejectLink}" 
-                   style="color:gray; padding: 10px 20px; background-color: white; border-radius: 5px; border: 1px solid gray; text-decoration: none; font-weight: bold; display: inline-block; margin-left: 10px;">
-                  Reject
-                </a>
+          // Generate the accept link with pass ID for the admin to scan via QR code
+          const acceptLink = `${dummyLink}?action=accept&passId=${pass._id}`;
+
+          // Generate QR code for the accept link
+          const acceptQR = await QRCode.toDataURL(acceptLink);
+
+          // Attach QR code image with unique CID
+          const cid = `qr_${pass._id}_${index}@vbi`;
+          attachments.push({
+            filename: `qr_code_${pass._id}_${index}.png`,
+            path: acceptQR, // Base64 encoded image
+            cid: cid, // Content ID to reference in the email HTML
+          });
+
+          return `
+            <div style="margin-bottom: 10px;">
+              <p>Date: ${formattedDate}</p>
+              <div>
+                <p>Scan QR code to accept:</p>
+                <img src="cid:${cid}" alt="QR Code for Accepting Pass" style="width: 150px; height: 150px;" />
               </div>
-            `;
-          })
-          .join("");
+            </div>
+          `;
+        })
+      );
 
-        return `
+      return {
+        passDetails: `
           <div style="margin-bottom: 20px;">
             <p><strong>Pass Type:</strong> ${pass.type}</p>
             <p><strong>Quantity:</strong> ${pass.quantity}</p>
             <p><strong>Price:</strong> ₹${pass.price}</p>
             <p><strong>Dates:</strong></p>
-            ${formattedDates}
+            ${formattedDates.join("")}
           </div>
-        `;
-      })
-      .join("");
+        `,
+        attachments,
+      };
+    });
 
-    // Create the email options
+    // Wait for all pass details to be generated
+    const passDetailsWithAttachments = await Promise.all(passDetailsPromises);
+
+    // Collect HTML details and attachments
+    const passDetails = passDetailsWithAttachments
+      .map((pd) => pd.passDetails)
+      .join("");
+    const allAttachments = passDetailsWithAttachments.flatMap(
+      (pd) => pd.attachments
+    );
+
+    // Create the email options with QR codes embedded
     const mailOptions = {
       from: "utsavvasoya99@gmail.com",
       to: email,
-      subject: "Payment Link for Your Selected Passes",
+      subject: "Your Pass Details with QR Code for Admin Acceptance",
       html: `
         <h3>Hello, ${firstName} ${lastName},</h3>
-        <p>Here are the details of your passes. Please review each date and click to accept or reject accordingly.</p>
+        <p>Please review the pass details below. The QR code can be scanned by an admin to accept the pass.</p>
         ${passDetails}
         <p>If you have any issues, feel free to contact us.</p>
         <p>Best Regards, <br />VBI</p>
       `,
+      attachments: allAttachments,
     };
 
     // Send the email
     await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully");
   } catch (error) {
-    console.error("Error in sendEmail function:", error);
+    console.error("Error in sendEmail function:", error.message);
     throw new Error("Failed to send email: " + error.message);
   }
 };
-
-module.exports = { sendEmail };
-
 
 module.exports = { sendEmail };

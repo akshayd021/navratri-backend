@@ -13,7 +13,7 @@ const passSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  selectedDates: [
+  selectedDates: [  
     {
       date: {
         type: String,
