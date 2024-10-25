@@ -31,36 +31,58 @@ const sendEmail = async (email, passes, dummyLink, firstName, lastName) => {
       }
 
       const attachments = [];
+      let formattedDates = []; // Initialize formattedDates as an array
 
-      const formattedDates = await Promise.all(
-        pass.selectedDates.map(async (date, index) => {
-          const formattedDate = formatDate(date?.date);
+      // Check if selectedDates has more than 5 dates
+      if (pass.selectedDates.length > 5) {
+        // Generate a single QR code if there are more than 5 dates
+        const singleAcceptLink = `${dummyLink}?action=accept&passId=${pass._id}`;
+        const singleAcceptQR = await QRCode.toDataURL(singleAcceptLink);
 
-          // Generate the accept link with pass ID for the admin to scan via QR code
-          const acceptLink = `${dummyLink}?action=accept&passId=${pass._id}`;
+        // Attach the single QR code image with unique CID
+        const cid = `qr_${pass._id}_single@vbi`;
+        attachments.push({
+          filename: `qr_code_${pass._id}_single.png`,
+          path: singleAcceptQR, // Base64 encoded image
+          cid: cid, // Content ID to reference in the email HTML
+        });
 
-          // Generate QR code for the accept link
-          const acceptQR = await QRCode.toDataURL(acceptLink);
+        formattedDates.push(`
+          <div>
+            <p>Multiple dates selected, scan the QR code below for acceptance:</p>
+            <img src="cid:${cid}" alt="QR Code for Accepting Pass" style="width: 150px; height: 150px;" />
+          </div>
+        `);
+      } else {
+        // Generate individual QR codes for each date if <= 5 dates
+        formattedDates = await Promise.all(
+          pass.selectedDates.map(async (date, index) => {
+            const formattedDate = formatDate(date?.date);
+            const acceptLink = `${dummyLink}?action=accept&passId=${pass._id}`;
 
-          // Attach QR code image with unique CID
-          const cid = `qr_${pass._id}_${index}@vbi`;
-          attachments.push({
-            filename: `qr_code_${pass._id}_${index}.png`,
-            path: acceptQR, // Base64 encoded image
-            cid: cid, // Content ID to reference in the email HTML
-          });
+            // Generate QR code for the accept link
+            const acceptQR = await QRCode.toDataURL(acceptLink);
 
-          return `
-            <div style="margin-bottom: 10px;">
-              <p>Date: ${formattedDate}</p>
-              <div>
-                <p>Scan QR code to accept:</p>
-                <img src="cid:${cid}" alt="QR Code for Accepting Pass" style="width: 150px; height: 150px;" />
+            // Attach QR code image with unique CID
+            const cid = `qr_${pass._id}_${index}@vbi`;
+            attachments.push({
+              filename: `qr_code_${pass._id}_${index}.png`,
+              path: acceptQR, // Base64 encoded image
+              cid: cid, // Content ID to reference in the email HTML
+            });
+
+            return `
+              <div style="margin-bottom: 10px;">
+                <p>Date: ${formattedDate}</p>
+                <div>
+                  <p>Scan QR code to accept:</p>
+                  <img src="cid:${cid}" alt="QR Code for Accepting Pass" style="width: 150px; height: 150px;" />
+                </div>
               </div>
-            </div>
-          `;
-        })
-      );
+            `;
+          })
+        );
+      }
 
       return {
         passDetails: `
@@ -69,17 +91,15 @@ const sendEmail = async (email, passes, dummyLink, firstName, lastName) => {
             <p><strong>Quantity:</strong> ${pass.quantity}</p>
             <p><strong>Price:</strong> ₹${pass.price}</p>
             <p><strong>Dates:</strong></p>
-            ${formattedDates.join("")}
+            ${formattedDates.join("")} <!-- Join formattedDates here -->
           </div>
         `,
         attachments,
       };
     });
 
-    // Wait for all pass details to be generated
     const passDetailsWithAttachments = await Promise.all(passDetailsPromises);
 
-    // Collect HTML details and attachments
     const passDetails = passDetailsWithAttachments
       .map((pd) => pd.passDetails)
       .join("");
@@ -87,7 +107,6 @@ const sendEmail = async (email, passes, dummyLink, firstName, lastName) => {
       (pd) => pd.attachments
     );
 
-    // Create the email options with QR codes embedded
     const mailOptions = {
       from: "utsavvasoya99@gmail.com",
       to: email,
@@ -102,7 +121,6 @@ const sendEmail = async (email, passes, dummyLink, firstName, lastName) => {
       attachments: allAttachments,
     };
 
-    // Send the email
     await transporter.sendMail(mailOptions);
     console.log("Email sent successfully");
   } catch (error) {
@@ -110,5 +128,6 @@ const sendEmail = async (email, passes, dummyLink, firstName, lastName) => {
     throw new Error("Failed to send email: " + error.message);
   }
 };
+
 
 module.exports = { sendEmail };

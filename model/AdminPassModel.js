@@ -9,20 +9,31 @@ const passSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  discount: {
+  seasonPrice: {
     type: Number,
-    default: 0, // Optional: Default value if not specified
+    default: null,
   },
-  discountType: {
-    type: String,
-    enum: ['percentage', 'currency'], // Restrict to valid values
-    default: 'percentage', // Optional: Default value
+  threeDaysPrice: {
+    type: Number,
+    default: null,
+  },
+  fiveDaysPrice: {
+    type: Number,
+    default: null,
   },
   isThreeDaysCombo: {
     type: Boolean,
-    default: false, // Optional: Default value for 3 days combo
-  }
-});
+    default: false,
+  },
+  isFiveDaysCombo: {
+    type: Boolean,
+    default: false,
+  },
+  seasonPass: {
+    type: Boolean,
+    default: false,
+  },
+}, { timestamps: true });
 
 const AdminPass = mongoose.model("AdminPass", passSchema);
 

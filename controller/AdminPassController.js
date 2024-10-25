@@ -2,13 +2,26 @@ const AdminPass = require("../model/AdminPassModel");
 
 const createPass = async (req, res) => {
   try {
-    const { type, price, discount, discountType, isThreeDaysCombo } = req.body;
+    const {
+      type,
+      price,
+      seasonPrice,
+      threeDaysPrice,
+      fiveDaysPrice,
+      isThreeDaysCombo,
+      isFiveDaysCombo,
+      seasonPass,
+    } = req.body;
+
     const newPass = new AdminPass({
       type,
       price,
-      discount: discount || 0, // Default to 0 if not provided
-      discountType: discountType || 'percentage', // Default to percentage
-      isThreeDaysCombo: isThreeDaysCombo || false, // Default to false
+      seasonPrice,
+      threeDaysPrice,
+      fiveDaysPrice,
+      isThreeDaysCombo: isThreeDaysCombo || false,
+      isFiveDaysCombo: isFiveDaysCombo || false,
+      seasonPass: seasonPass || false,
     });
 
     await newPass.save();
@@ -17,6 +30,9 @@ const createPass = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+module.exports = { createPass };
+
 
 const getAllPasses = async (req, res) => {
   try {
@@ -31,7 +47,7 @@ const getPass = async (req, res) => {
   try {
     const pass = await AdminPass.findById(req.params.id);
     if (!pass) {
-      return res.status(404).json({ error: 'Pass not found' });
+      return res.status(404).json({ error: "Pass not found" });
     }
     res.status(200).json(pass);
   } catch (error) {
@@ -49,7 +65,7 @@ const updatePass = async (req, res) => {
     );
 
     if (!updatedPass) {
-      return res.status(404).json({ error: 'Pass not found' });
+      return res.status(404).json({ error: "Pass not found" });
     }
     res.status(200).json(updatedPass);
   } catch (error) {
@@ -61,9 +77,9 @@ const deletePass = async (req, res) => {
   try {
     const deletedPass = await AdminPass.findByIdAndDelete(req.params.id);
     if (!deletedPass) {
-      return res.status(404).json({ error: 'Pass not found' });
+      return res.status(404).json({ error: "Pass not found" });
     }
-    res.status(200).json({ message: 'Pass deleted successfully' });
+    res.status(200).json({ message: "Pass deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

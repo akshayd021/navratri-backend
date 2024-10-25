@@ -12,13 +12,13 @@ const parseCustomDate = (dateStr) => {
 const Passes = async (req, res) => {
   const { type, quantity, selectedDates, price } = req.body;
 
-  if (
-    !Array.isArray(selectedDates) ||
-    selectedDates.length === 0 ||
-    selectedDates.length > 3
-  ) {
-    return res.status(400).json({ error: "You must select 1 to 3 dates." });
-  }
+  // if (
+  //   !Array.isArray(selectedDates) ||
+  //   selectedDates.length === 0 ||
+  //   selectedDates.length > 3
+  // ) {
+  //   return res.status(400).json({ error: "You must select 1 to 3 dates." });
+  // }
 
   const parsedDates = selectedDates.map((date) => {
     const parsedDate = parseCustomDate(date);
