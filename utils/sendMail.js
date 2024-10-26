@@ -77,6 +77,7 @@ const sendEmail = async (email, passes, dummyLink, firstName, lastName) => {
                 <div>
                   <p>Scan QR code to accept:</p>
                   <img src="cid:${cid}" alt="QR Code for Accepting Pass" style="width: 150px; height: 150px;" />
+                  <P>${acceptLink}</P>
                 </div>
               </div>
             `;

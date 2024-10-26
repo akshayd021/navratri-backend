@@ -2,28 +2,49 @@ const Pass = require("../model/passModel");
 const { sendEmail } = require("../utils/sendMail");
 
 const parseCustomDate = (dateStr) => {
+  if (!dateStr) {
+    console.error("Received an invalid or undefined dateStr:", dateStr);
+    return new Date(NaN); // Return Invalid Date if dateStr is not provided
+  }
+
   const [day, month, year] = dateStr.split("/"); // Split by "/"
-  if (!day || !month || !year) return new Date(NaN); // Return Invalid Date if format is incorrect
+  if (!day || !month || !year) {
+    console.error("Invalid date format. Expected format: DD/MM/YYYY");
+    return new Date(NaN);
+  }
 
   // Construct a new Date object using the split values
   return new Date(`${year}-${month}-${day}`); // Convert to YYYY-MM-DD for JavaScript Date
 };
-
 const Passes = async (req, res) => {
-  const { type, quantity, selectedDates, price } = req.body;
+  // Assuming the request body is an array, access the first element
+  const [passData] = req.body; // Destructure the first element of the array
 
-  // if (
-  //   !Array.isArray(selectedDates) ||
-  //   selectedDates.length === 0 ||
-  //   selectedDates.length > 3
-  // ) {
-  //   return res.status(400).json({ error: "You must select 1 to 3 dates." });
-  // }
+  // If passData is undefined, return an error
+  if (!passData) {
+    return res.status(400).json({ error: "No pass data provided." });
+  }
 
+  let { type, quantity, selectedDates, price } = passData;
+
+  console.log("Received payload:", passData); // Log the entire payload to see its structure
+
+  // Ensure `selectedDates` is an array and filter out any empty or undefined values
+  if (!Array.isArray(selectedDates)) {
+    selectedDates = [selectedDates];
+  }
+  selectedDates = selectedDates.filter(date => date); // Remove any falsy values
+
+  // Check if `selectedDates` is now empty after filtering
+  if (selectedDates.length === 0) {
+    return res.status(400).json({ error: "Selected dates must be a non-empty array." });
+  }
+
+  // Parse dates, ensuring only valid dates are processed
   const parsedDates = selectedDates.map((date) => {
     const parsedDate = parseCustomDate(date);
     if (isNaN(parsedDate)) {
-      console.error(`Invalid date: ${date}`);
+      console.error(`Invalid date format: ${date}`);
       return res.status(400).json({ error: `Invalid date format: ${date}` });
     }
     return { date: parsedDate, status: "pending" };
@@ -43,6 +64,9 @@ const Passes = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
 
 const updatePassStatus = async (req, res) => {
   const { _id, date, action } = req.body; // Expect pass _id, specific date (DD/MM/YYYY), and action (accept/reject)
@@ -132,7 +156,7 @@ const sendMail = async (req, res) => {
   const { passes, email, _id, firstName, lastName } = req.body;
 
   try {
-    const dummyLink = `http://192.168.29.219:3000/pass/${_id}`;
+    const dummyLink = `http://192.168.29.219:3000/user-pass/${_id}`;
     const updatedPasses = passes.map((pass) => ({
       ...pass,
       firstName: firstName,
