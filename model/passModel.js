@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
-const passSchema = new mongoose.Schema({
+const passSchema = new Schema({
   type: {
     type: String,
     required: true,
@@ -8,22 +9,15 @@ const passSchema = new mongoose.Schema({
   price: {
     type: Number,
     required: true,
-  },  
+  },
   quantity: {
     type: Number,
     required: true,
   },
   selectedDates: [
     {
-      date: {
-        type: String,
-        required: true,
-      },
-      status: {
-        type: String,
-        enum: ["pending", "accepted", "rejected"],
-        default: "pending",
-      },
+      date: Date, // Date field
+      status: { type: String, default: "pending" }, // Status with default
     },
   ],
   date: {
@@ -33,12 +27,15 @@ const passSchema = new mongoose.Schema({
   UserLink: {
     type: String,
   },
-  firstName :{
-    type :String, 
+  firstName: {
+    type: String,
   },
-  lastName :{
-    type :String, 
-  }
+  lastName: {
+    type: String,
+  },
+  total: {
+    type: Number,
+  },
 });
 
 const Pass = mongoose.model("Pass", passSchema);
