@@ -23,9 +23,6 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 // Use auth routes
-app.use('/', (req, res)=>{
-  res.send("hey")
-});
 app.use("/api/auth", authRoutes);
 app.use("/api", passRoutes);
 app.use("/api", DateRoutes);
