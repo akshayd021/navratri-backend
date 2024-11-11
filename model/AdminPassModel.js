@@ -1,27 +1,16 @@
 const mongoose = require("mongoose");
 
 const passSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    required: true,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
-  discount: {
-    type: Number,
-    default: 0, // Optional: Default value if not specified
-  },
-  discountType: {
-    type: String,
-    enum: ['percentage', 'currency'], // Restrict to valid values
-    default: 'percentage', // Optional: Default value
-  },
-  isThreeDaysCombo: {
-    type: Boolean,
-    default: false, // Optional: Default value for 3 days combo
-  }
+  type: { type: String, required: true },
+  price: { type: Number, required: true },
+  threeDaysPrice: { type: Number, default: 0 },
+  fiveDaysPrice: { type: Number, default: 0 },
+  seasonPrice: { type: Number, default: 0 },
+  isThreeDaysCombo: { type: Boolean, default: false },
+  isFiveDaysCombo: { type: Boolean, default: false },
+  seasonPass: { type: Boolean, default: false },
+  maxQuantity: { type: Number, required: true }, // New field
+  currentQuantity: { type: Number, default: 0 }, // New field to track purchases
 });
 
 const AdminPass = mongoose.model("AdminPass", passSchema);
