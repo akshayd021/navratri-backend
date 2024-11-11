@@ -48,7 +48,7 @@ exports.login = async (req, res) => {
 
     // Create and return JWT token (valid for 1 hour)
     const payload = { admin: { id: admin._id } };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    const token = jwt.sign(payload, "TESTTEST", {
       expiresIn: "1h",
     });
 

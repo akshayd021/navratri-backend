@@ -16,14 +16,16 @@ app.use(express.json());
 app.use(cors());
 
 mongoose
-  .connect(process.env.MONGODB_URI, {
+  .connect("mongodb+srv://navratri:navratri@cluster0.pap9u.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 // Use auth routes
-// app.use('/api/user', userRoutes);
+app.use('/', (req, res)=>{
+  res.send("hey")
+});
 app.use("/api/auth", authRoutes);
 app.use("/api", passRoutes);
 app.use("/api", DateRoutes);
