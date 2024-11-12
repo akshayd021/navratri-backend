@@ -1,5 +1,4 @@
 const AdminPass = require("../model/AdminPassModel");
-
 const createPass = async (req, res) => {
   try {
     const {
@@ -11,7 +10,7 @@ const createPass = async (req, res) => {
       isThreeDaysCombo,
       isFiveDaysCombo,
       seasonPass,
-      maxQuantity,  // New parameter for max quantity
+      maxQuantity,
     } = req.body;
 
     const newPass = new AdminPass({
@@ -24,6 +23,7 @@ const createPass = async (req, res) => {
       isFiveDaysCombo,
       seasonPass,
       maxQuantity,
+      isSoldOut: maxQuantity === 0, // Set initial isSoldOut based on maxQuantity
     });
 
     await newPass.save();
@@ -44,7 +44,7 @@ const updatePass = async (req, res) => {
       isThreeDaysCombo,
       isFiveDaysCombo,
       seasonPass,
-      maxQuantity,  // Handle max quantity updates
+      maxQuantity,
     } = req.body;
 
     const updatedPass = await AdminPass.findByIdAndUpdate(
@@ -59,6 +59,7 @@ const updatePass = async (req, res) => {
         isFiveDaysCombo,
         seasonPass,
         maxQuantity,
+        isSoldOut: maxQuantity === 0, // Update isSoldOut based on maxQuantity
       },
       { new: true, runValidators: true }
     );
@@ -72,15 +73,25 @@ const updatePass = async (req, res) => {
   }
 };
 
-// Function to check pass availability
 const checkPassAvailability = async (passId, requestedQuantity) => {
   const pass = await AdminPass.findById(passId);
-  return pass && pass.maxQuantity >= requestedQuantity;
+
+  if (!pass) return false;
+
+  // Check if requested quantity exceeds the allowed maxQuantity
+  if (pass.currentQuantity + requestedQuantity > pass.maxQuantity) {
+    return false;
+  }
+
+  // Update current quantity and set isSoldOut if the limit is reached
+  pass.currentQuantity += requestedQuantity;
+  if (pass.currentQuantity >= pass.maxQuantity) {
+    pass.isSoldout = true;
+  }
+  await pass.save();
+
+  return true;
 };
-
-
-
-
 
 
 const getAllPasses = async (req, res) => {
@@ -103,8 +114,6 @@ const getPass = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-
 
 const deletePass = async (req, res) => {
   try {

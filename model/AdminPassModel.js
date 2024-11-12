@@ -9,8 +9,9 @@ const passSchema = new mongoose.Schema({
   isThreeDaysCombo: { type: Boolean, default: false },
   isFiveDaysCombo: { type: Boolean, default: false },
   seasonPass: { type: Boolean, default: false },
-  maxQuantity: { type: Number, required: true }, // New field
-  currentQuantity: { type: Number, default: 0 }, // New field to track purchases
+  maxQuantity: { type: Number, required: true }, 
+  currentQuantity: { type: Number, default: 0 }, 
+  isSoldout: {type :Boolean, default : false}
 });
 
 const AdminPass = mongoose.model("AdminPass", passSchema);
