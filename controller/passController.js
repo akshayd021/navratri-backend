@@ -23,6 +23,7 @@ const Passes = async (req, res) => {
     firstName,
     lastName,
     total,
+    discount,
   } = passData;
 
   if (selectedDates.length === 0) {
@@ -50,6 +51,7 @@ const Passes = async (req, res) => {
       firstName,
       lastName,
       total,
+      discount,
     });
     await newPass.save();
     res.status(201).json(newPass);
@@ -151,7 +153,6 @@ const sendMail = async (req, res) => {
         date instanceof Date ? date.toLocaleDateString("en-GB") : date
       ),
     }));
-
 
     await sendEmail(email, passDetails, dummyLink, lastName, firstName);
     res

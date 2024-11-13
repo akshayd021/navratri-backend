@@ -36,6 +36,9 @@ const passSchema = new Schema({
   total: {
     type: Number,
   },
+  discount :{
+    type :Number
+  }
 });
 
 const Pass = mongoose.model("Pass", passSchema);
