@@ -33,12 +33,15 @@ const passSchema = new Schema({
   lastName: {
     type: String,
   },
+  email: {
+    type: String,
+  },
   total: {
     type: Number,
   },
-  discount :{
-    type :Number
-  }
+  discount: {
+    type: Number,
+  },
 });
 
 const Pass = mongoose.model("Pass", passSchema);

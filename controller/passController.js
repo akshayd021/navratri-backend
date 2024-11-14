@@ -24,6 +24,7 @@ const Passes = async (req, res) => {
     lastName,
     total,
     discount,
+    email,
   } = passData;
 
   if (selectedDates.length === 0) {
@@ -52,6 +53,7 @@ const Passes = async (req, res) => {
       lastName,
       total,
       discount,
+      email,
     });
     await newPass.save();
     res.status(201).json(newPass);
@@ -132,7 +134,7 @@ const updatePassDetails = async (req, res) => {
     res.json({
       success: true,
       message: "Pass details updated successfully",
-      pass: updatedPass, // Return the updated pass data
+      pass: updatedPass,
     });
   } catch (error) {
     console.error("Error updating pass details:", error);
@@ -148,6 +150,7 @@ const sendMail = async (req, res) => {
     const passDetails = passes.map((pass) => ({
       ...pass,
       firstName,
+      email,
       lastName,
       selectedDates: pass.selectedDates.map((date) =>
         date instanceof Date ? date.toLocaleDateString("en-GB") : date
@@ -184,10 +187,7 @@ const getPass = async (req, res) => {
 };
 
 const handlePassAction = async (req, res) => {
-  const { action, dateId } = req.body; // Receive dateId and action from the request body
-
-  // Log the dateId received
-
+  const { action, dateId } = req.body;
   try {
     if (!action || !dateId) {
       return res
@@ -195,9 +195,8 @@ const handlePassAction = async (req, res) => {
         .json({ success: false, message: "Action or dateId missing." });
     }
 
-    // Find the pass where the selectedDates array contains the given dateId
     const pass = await Pass.findOne({
-      "selectedDates._id": dateId, // Search within the selectedDates subdocument array
+      "selectedDates._id": dateId,
     });
 
     if (!pass) {
@@ -207,7 +206,6 @@ const handlePassAction = async (req, res) => {
       });
     }
 
-    // Find the specific date object within the selectedDates array by its ID
     const dateIndex = pass.selectedDates.findIndex(
       (d) => d._id.toString() === dateId
     );

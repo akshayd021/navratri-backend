@@ -5,7 +5,7 @@ const DateRoutes = require("./router/date");
 const passRoutes = require("./router/pass");
 const AdminPassRoutes = require("./router/AdminPass");
 const promoCodeRoutes = require("./router/promo");
-
+const MsgRoute = require("./router/message")
 
 const authRoutes = require("./router/Admin")
 const cors = require("cors");
@@ -28,6 +28,7 @@ app.use("/api", passRoutes);
 app.use("/api", DateRoutes);
 app.use("/api/admin", AdminPassRoutes);
 app.use("/api/promos", promoCodeRoutes);
+app.use("/api", MsgRoute);
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
